@@ -97,11 +97,10 @@ bootstrap_confi <- function(x, y, b=20, alpha = 0.05){
 }
 ```
 
-
-## Plotting the Predicted probabilities vrs. the true Data Points
 ```{r}
 bootstrap_confi(x, y)
 ```
+## Plotting the Predicted probabilities vrs. the true Data Points
 ```{r}
 intercept <- rep(1, n)
 px = cbind(intercept, x)
@@ -116,3 +115,36 @@ lines(sigmoid(oz)~otemp, lwd=2, col="green")
 }
      
 ```
+
+```{r}
+y <- as.matrix(y)
+data <- cbind(y,x)
+data_new <- data.frame(data)
+
+#splitting the data into training and test data
+set.seed(1)
+sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+train <- data[sample, ]
+test <- data[!sample, ]
+
+train <- data_new[1:700,]
+test <- data_new[701:1000,]
+
+model <- glm(dependent~independent,family = "binomial", data=train) #validating our function 
+summary(model)
+
+predicted <- predict(model, test, type="response")
+
+# If p exceeds threshold of 0.5, 1 else 0
+cutoff <- 0.5
+thres_pred <- ifelse(predicted > cutoff, 1, 0)
+
+# Convert to factor: p_class
+p_class <- as.factor(thres_pred)
+#p_class <- factor(thres_pred, levels = levels(test[["th"]]))
+
+
+# Create confusion matrix
+confusionMatrix(as.factor(test$dependent), p_class)
+```
+
