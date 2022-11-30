@@ -38,7 +38,7 @@ logisticReg <- function(X, y){
   #use the optim function to perform gradient descent
   costOpti <- optim(init_val(X,y), fn = est, X = X, y = y)
   #return coefficients
-  return(costOpti$par)
+  return(c(costOpti$par, costOpti$value))
 }
 
 
@@ -63,6 +63,8 @@ bootstrap_confi <- function(X, y, b=20, alpha = 0.05){
   confi_interval <- cbind(beta_mean,lower_bound, upper_bound)
   return(confi_interval)
 }
+
+
 
 #implementing the plot
 plot.lsoptim <- function(object, ...) {
