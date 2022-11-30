@@ -120,12 +120,13 @@ lines(sigmoid(oz)~otemp, lwd=2, col="green")
 y <- as.matrix(y)
 data <- cbind(y,x)
 data_new <- data.frame(data)
+colnames(data_new) <- cbind("dependent","independent")
 
 #splitting the data into training and test data
 set.seed(1)
 sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
-train <- data[sample, ]
-test <- data[!sample, ]
+train <- data_new[sample, ]
+test <- data_new[!sample, ]
 
 train <- data_new[1:700,]
 test <- data_new[701:1000,]
