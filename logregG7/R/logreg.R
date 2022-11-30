@@ -13,7 +13,6 @@ sigmoid <- function(x, beta){
 
 #Implementing the loss function
 est <- function(theta, X, y) {
-  m <- length(y)
   p <- sigmoid(X, theta)
   b_hat <- (t(-y)%*%log(p)-t(1-y)%*%log(1-p))
   b_hat
@@ -47,13 +46,12 @@ logisticReg <- function(X, y){
 bootstrap_confi <- function(X, y, b=20, alpha = 0.05){
   n <- dim(X)[1]
   p <- dim(X)[2]
-  #concat <- cbind(x,y)
+
   beta <- matrix(nrow = b, ncol = p+1)
   for (i in 1:b) {
     draw <- sample(1:n, n, replace = TRUE)
     boot_x <- X[draw,]
     boot_y <- y[draw]
-
     beta[i,] <- logisticReg(boot_x, boot_y)
   }
   beta_mean <- apply(beta, 2, mean)
