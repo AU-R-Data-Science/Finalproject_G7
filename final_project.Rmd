@@ -1,6 +1,6 @@
 ---
 title: "Group 7"
-author: "Festus Attah"
+author: "Festus Attah, Manisha Parajuli, Favour Onyido"
 date: "2022-11-30"
 output: html_document
 ---
@@ -8,6 +8,10 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(caret)
 ```
 
 
@@ -128,8 +132,8 @@ sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
 train <- data_new[sample, ]
 test <- data_new[!sample, ]
 
-train <- data_new[1:700,]
-test <- data_new[701:1000,]
+# train <- data_new[1:700,]
+# test <- data_new[701:1000,]
 
 model <- glm(dependent~independent,family = "binomial", data=train) #validating our function 
 summary(model)
@@ -146,6 +150,49 @@ p_class <- as.factor(thres_pred)
 
 
 # Create confusion matrix
-confusionMatrix(as.factor(test$dependent), p_class)
+con_mat <- confusionMatrix(as.factor(test$dependent), p_class)
+```
+
+```{r}
+#Calculations from the confusion matrix
+
+TN <- con_mat$table[1]
+FN <- con_mat$table[2]
+FP <- con_mat$table[3]
+TP <- con_mat$table[4]
+
+#Prevelance pre
+pre <- (FN+TP)/(TP+TN+FP+FN)
+
+#Accuracy acc
+acc <- (TP+TN)/(TP+TN+FP+FN)
+
+#Sensitivity sen
+sen <- TP/(TP+FN)
+
+#Specificity spe
+spe <- TN/(TN +FP)
+
+#False discovery ratio fdr
+fdr <- FP/(FP+TP)
+
+#Diagnostic odds ratio dor
+#getting lr+
+fpr <- 1-spe
+lrp <- sen/fpr
+
+#getting lr+
+fnr <- 1-sen
+lrn <- fnr/spe
+
+#getter dor
+dor <- lrp/lrn
+
+
+
+
+
+
+
 ```
 
