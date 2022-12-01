@@ -34,7 +34,7 @@ y <- as.vector(round(sigmoid(beta%*%t(cbind(1,x))+rnorm(n, 0, 1))))
 ```{r}
 #cost function
 cost <- function(beta, X, y){
-  m <- length(y)
+  m <- length(y) #number of rows  of the training data
   h <- sigmoid(X %*% beta)
   J <- (t(-y)%*%log(h)-t(1-y)%*%log(1-h))/m #log likelihood function
   return(J)
@@ -121,36 +121,88 @@ lines(sigmoid(oz)~otemp, lwd=2, col="green")
 ```
 
 ```{r}
+
+confusion_matrix <- function(x, y, cutoff = 0.5, prob=c(0.7,0.3)){
+
+intercept <- rep(1, n)
+px = cbind(intercept, x)
+
 y <- as.matrix(y)
-data <- cbind(y,x)
+data <- cbind(y,px)
 data_new <- data.frame(data)
 colnames(data_new) <- cbind("dependent","independent")
-
-#splitting the data into training and test data
 set.seed(1)
+
 sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
 train <- data_new[sample, ]
 test <- data_new[!sample, ]
 
+model_predict <-  px%*%result
+
+cutoff = 0.5
+thres_pred <- ifelse(model_predict > cutoff, 1, 0)
+p_class <- as.factor(thres_pred)
+con_mat <- confusionMatrix(as.factor(test$dependent), p_class)
+return(con_mat)
+}
+
+# confusion_matrix <- function(x, y, cutoff = 0.5, prob=c(0.7,0.3)){
+# 
+# intercept <- rep(1, n)
+# px = cbind(intercept, x)
+# 
+# y <- as.matrix(y)
+# data <- cbind(y,x)
+# data_new <- data.frame(data)
+# colnames(data_new) <- cbind("dependent","independent")
+# 
+# set.seed(1)
+# sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+# train <- data_new[sample, ]
+# test <- data_new[!sample, ]
+# 
+# intercept <- rep(1, n)
+# px = cbind(intercept, data_new$independent)
+# 
+# model_predict <-  px%*%result
+# 
+# cutoff = 0.5
+# thres_pred <- ifelse(model_predict > cutoff, 1, 0)
+# p_class <- as.factor(thres_pred)
+# con_mat <- confusionMatrix(as.factor(test$dependent), p_class)
+# return(con_mat)
+# }
+
+# y <- as.matrix(y)
+# data <- cbind(y,x)
+# data_new <- data.frame(data)
+# colnames(data_new) <- cbind("dependent","independent")
+
+#splitting the data into training and test data
+# set.seed(1)
+# sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+# train <- data_new[sample, ]
+# test <- data_new[!sample, ]
+
 # train <- data_new[1:700,]
-# test <- data_new[701:1000,]
+# test <- data_new[701:1000,] #this not part of code
 
-model <- glm(dependent~independent,family = "binomial", data=train) #validating our function 
-summary(model)
-
-predicted <- predict(model, test, type="response")
+# model <- glm(dependent~independent,family = "binomial", data=train) #validating our function 
+# summary(model)
+# 
+# predicted <- predict(model, test, type="response")
 
 # If p exceeds threshold of 0.5, 1 else 0
-cutoff <- 0.5
-thres_pred <- ifelse(predicted > cutoff, 1, 0)
+# cutoff <- 0.5
+# thres_pred <- ifelse(predicted > cutoff, 1, 0)
 
 # Convert to factor: p_class
-p_class <- as.factor(thres_pred)
+#p_class <- as.factor(thres_pred)
 #p_class <- factor(thres_pred, levels = levels(test[["th"]]))
 
 
 # Create confusion matrix
-con_mat <- confusionMatrix(as.factor(test$dependent), p_class)
+#con_mat <- confusionMatrix(as.factor(test$dependent), p_class)
 ```
 
 ```{r}
@@ -189,10 +241,36 @@ lrn <- fnr/spe
 dor <- lrp/lrn
 
 
+```
+
+```{r}
+sequence <- seq(0.1, 0.9, 0.1)
+
+for (i in sequence){
+  confusion_matrix <- function(x, y, cutoff = 0.5, prob=c(0.7,0.3)){
+
+intercept <- rep(1, n)
+px = cbind(intercept, x)
+  
+y <- as.matrix(y)
+data <- cbind(y,x)
+data_new <- data.frame(data)
+colnames(data_new) <- cbind("dependent","independent")  
+set.seed(1)
+
+sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob)
+train <- data_new[sample, ]
+test <- data_new[!sample, ]
+
+model_predict <-  px%*%result
 
 
-
-
-
+thres_pred <- ifelse(model_predict > cutoff, 1, 0)
+p_class <- as.factor(thres_pred)
+con_mat <- confusionMatrix(as.factor(test$dependent), p_class)
+return(con_mat)
+}
+  
+}
 ```
 
