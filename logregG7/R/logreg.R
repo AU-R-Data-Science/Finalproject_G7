@@ -19,7 +19,9 @@ est <- function(theta, X, y) {
 }
 
 #initial values
-X <- matrix(rnorm(10), nrow = 5) #cbind(c(1,2,3,4,5), c(6,7,8,9,10))
+X <- matrix(rnorm(10), nrow = 5)
+#Adding bias column
+X <- cbind(1, X)
 y <- c(0,1,0,1,0)
 
 init_val <- function(X,y){
@@ -37,8 +39,11 @@ logisticReg <- function(X, y){
   #use the optim function to perform gradient descent
   costOpti <- optim(init_val(X,y), fn = est, X = X, y = y)
   #return coefficients
-  return(c(costOpti$par, costOpti$value))
+  return(costOpti$par)
 }
+
+res1 <- glm(y~X,family = "binomial")
+summary(res1)$coefficients
 
 
 #Implemeting bootstrap
@@ -47,7 +52,7 @@ bootstrap_confi <- function(X, y, b=20, alpha = 0.05){
   n <- dim(X)[1]
   p <- dim(X)[2]
 
-  beta <- matrix(nrow = b, ncol = p+1)
+  beta <- matrix(nrow = b, ncol = p)
   for (i in 1:b) {
     draw <- sample(1:n, n, replace = TRUE)
     boot_x <- X[draw,]
