@@ -134,7 +134,7 @@ conf_mat <- function(x,y, cutoff = 0.5){
   y <- factor(y)
   levels(y) <- c('Negative', 'Positive')
   levels(pred) <- c('Negative', 'Positive')
-  return (confusionMatrix(pred,y))
+  return (confusionMatrix(pred,y)$table)
 }
 conf_mat(x,y)
 ```

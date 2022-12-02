@@ -1,64 +1,102 @@
-library(ggplot2)
-library(dplyr)
+#Importing needed libraries
+library(caret)
 
-#Implementing the pi function
-pi <- function(g){
-  1/(1+exp(-g))
+
+#Generating the sigmoid function
+sigmoid <- function(x){
+  return(1/(1 + exp(- x)))
 }
 
-sigmoid <- function(x, beta){
-  as.matrix(x)
-  return(1/(1 + exp(- (x%*%beta))))
+#Simulating random sample of x and y
+set.seed(233)
+n <- 1000
+p <- 1
+rx <- rnorm(n*p, 0, 4)
+x <- matrix(rx,ncol=p)
+beta <- rpois(p+1,1.56)
+y <- as.vector(round(sigmoid(beta%*%t(cbind(1,x))+rnorm(n, 0, 1))))
+
+
+#' @title Cost function
+#' @description This function computes the cost function that is to be optimized
+#' @param beta A \code{vector}
+#' @param x A \code{matrix} that holds the independent variables
+#' @param y A \code{vector} representing the dependent variable
+#' @return A \code{matrix} containing the following objects
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+cost <- function(beta, X, y){
+  m <- length(y) #number of rows  of the training data
+  h <- sigmoid(X %*% beta)
+  J <- (t(-y)%*%log(h)-t(1-y)%*%log(1-h))/m #log likelihood function
+  return(J)
 }
 
-#Implementing the loss function
-est <- function(theta, X, y) {
-  p <- sigmoid(X, theta)
-  b_hat <- (t(-y)%*%log(p)-t(1-y)%*%log(1-p))
-  b_hat
+#' @title Gradient function
+#' @description This function computes the gradient function that is to be optimized
+#' @param beta A 2 digit \code{vector}
+#' @param x A \code{matrix} that holds the independent variables
+#' @param y A \code{vector} representing the dependent variable
+#' @return A \code{matrix} containing the following objects
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+grad <- function(beta, X, y){
+  m <- length(y)
+
+  h <- sigmoid(X%*%beta)
+  grad <- (t(X)%*%(h - y))/m
+  return(grad)
 }
 
-#initial values
-X <- matrix(rnorm(10), nrow = 5)
-#Adding bias column
-X <- cbind(1, X)
-y <- c(0,1,0,1,0)
+#' @title Optim log
+#' @description This function minimizes the cost function computed above
+#' @param x A \code{matrix} that holds the independent variables
+#' @param y A \code{vector} representing the dependent variable
+#' @return A \code{matrix} containing the intercept and coefficient
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+Optim_log <- function(x, y)
+{
+  if(!is.matrix(x)){
+    x = as.matrix(x)
+  }
+  m <- dim(x)[1]
+  intercept <- rep(1, m)
+  x = cbind(intercept, x)
+  x_inverse <- solve(t(x)%*%x)
+  beta <- x_inverse%*%t(x)%*%y
+  costOpti <- optim(beta, fn = cost, gr = grad, X = x, y = y)
 
-init_val <- function(X,y){
-  solve(t(X)%*%X)%*%(t(X)%*%y)
-}
-
-
-#Implementing the logistic function
-logisticReg <- function(X, y){
-  #remove NA rows
-  X <- na.omit(X)
-  y <- na.omit(y)
-  #converting y to matrix
-  y <- as.matrix(y)
-  #use the optim function to perform gradient descent
-  costOpti <- optim(init_val(X,y), fn = est, X = X, y = y)
-  #return coefficients
   return(costOpti$par)
 }
 
-res1 <- glm(y~X,family = "binomial")
-summary(res1)$coefficients
+#Bootstrap confidence interval
+#' @title Bootstrap confidence interval
+#' @description This function uses the bootstrap resampling method with replacement to compute the confidence interval
+#' @param x A \code{matrix} that holds the independent variables
+#' @param y A \code{vector} representing the dependent variable
+#' @param b A \code{numeric} representing the number of bootstrap replications
+#' @param alpha A \code{numeric} representing the confidence levzel
+#' @return A \code{matrix} containing the following objects:
+#' \describe{
+#'  \item{beta_mean}{This \code{numeric} represents the mean of the parameter estimates}
+#'  \item{lower_bound}{This \code{numeric} represents 95% confidence that beta_mean is equal to or greater than this lower bound}
+#' \item{upper_bound}{This \code{numeric} represents 95% confidence that beta_mean is equal to or lower than this upper bound}
+#' }
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+bootstrap_confi <- function(x, y, b=20, alpha = 0.05){
+  n <- dim(x)[1]
+  p <- dim(x)[2]
+  beta <- matrix(nrow = b, ncol = p+1)
 
-
-#Implemeting bootstrap
-
-bootstrap_confi <- function(X, y, b=20, alpha = 0.05){
-  n <- dim(X)[1]
-  p <- dim(X)[2]
-
-  beta <- matrix(nrow = b, ncol = p)
   for (i in 1:b) {
     draw <- sample(1:n, n, replace = TRUE)
-    boot_x <- X[draw,]
+    boot_x <- x[draw,]
     boot_y <- y[draw]
-    beta[i,] <- logisticReg(boot_x, boot_y)
+    beta[i,] <- Optim_log(boot_x, boot_y)
   }
+
   beta_mean <- apply(beta, 2, mean)
   beta_std_dev <- apply(beta, 2, sd)
   lower_bound <- beta_mean - qnorm(1 - alpha/2)*beta_std_dev
@@ -68,22 +106,116 @@ bootstrap_confi <- function(X, y, b=20, alpha = 0.05){
 }
 
 
-
-#implementing the plot
-plot.lsoptim <- function(object, ...) {
-
-  hold <- object
-  response <- hold$response
-  predictors <- hold$predictors
-  beta_hat <- hold$beta_hat
-
-  dm <- ncol(predictors)
-
-  par(mfrow = c(1, dm - 1))
-
-  for(i in 2:dm) {
-
-    plot(predictors[, i], (response - predictors[, -c(1, i)]%*%beta_hat[-c(1, i)]), xlab = paste0("x",i), ylab = "response")
-    abline(beta_hat[1], beta_hat[i], col = "red")
-
+#' @title Plot of the predicted probabilities vs the true data points
+#' @description This function plots the predicted probabilities vrs. the true Data Points
+#' @param x A \code{matrix} that holds the independent variables
+#' @param y A \code{vector} representing the dependent variable
+#' @return A \code{plot} of the predicted probabilities vrs. the true Data Points
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+plot_predict <- function(x,y){
+  intercept <- rep(1, n)
+  px = cbind(intercept, x)
+  #data <- data.frame(y,intercept,x)
+  z <- px%*%Optim_log(x, y) #predicted probabilities
+  for (i in 1:dim(x)[2]){
+    temp <- x[,i]
+    otemp=temp[order(temp)]
+    oz=z[order(temp)]
+    plot(y ~ temp)
+    lines(sigmoid(oz)~otemp, lwd=2, col="green")
   }
+}
+
+
+#' @title Confusion matrix
+#' @description This function generates a confusion matrix for the predicted and actual values
+#' @param x A \code{matrix} that holds the independent variables
+#' @param y A \code{vector} representing the dependent variable
+#' @param cutoff A \code{numeric} representing the threshold to classify the predicted probabilities
+#' @return A \code{table} containing the true positive, true negative, false positive, false negative values.
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+conf_mat <- function(x,y, cutoff = 0.5){
+  n=dim(x)[1]
+  beta <- Optim_log(x,y)
+  px <-cbind(rep(1, n),x)
+  y_hat <- as.vector(sigmoid(px%*%beta))
+  pred <- factor(ifelse(y_hat<cutoff,0,1))
+  y <- factor(y)
+  levels(y) <- c('Negative', 'Positive')
+  levels(pred) <- c('Negative', 'Positive')
+  return (confusionMatrix(pred,y)$table)
+}
+
+
+#' @title Calculations from the confusion matrix
+#' @description This function calculates various values from the confusion matrix
+#' @param mat_tab A confusion matrix \code{table}
+#' @param cal A \code{character} representing the value to be computed
+#' @return A \code{character} of the computer value
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+cal_confusion_matrix <- function(mat_tab, cal="acc"){
+  TN <- mat_tab[1]
+  FN <- mat_tab[2]
+  FP <- mat_tab[3]
+  TP <- mat_tab[4]
+
+  #Prevelance pre
+  pre <- (FN+TP)/(TP+TN+FP+FN)
+
+  #Accuracy acc
+  acc <- (TP+TN)/(TP+TN+FP+FN)
+
+  #Sensitivity sen
+  sen <- TP/(TP+FN)
+
+  #Specificity spe
+  spe <- TN/(TN +FP)
+
+  #False discovery ratio fdr
+  fdr <- FP/(FP+TP)
+
+  #Diagnostic odds ratio dor
+  #getting lr+
+  fpr <- 1-spe
+  lrp <- sen/fpr
+
+  #getting lr+
+  fnr <- 1-sen
+  lrn <- fnr/spe
+
+  #getter dor
+  dor <- lrp/lrn
+
+  switch(cal,
+         "pre"= return(paste("Prevelence is", pre)),
+         "acc"= return(paste("Accuracy is", acc)),
+         "sen"= return(paste("Sensitivity is",sen)),
+         "spe"= return(paste("Specificity is",spe)),
+         "fdr"= return(paste("False discovery ratio is",fdr)),
+         "dor"= return(paste("Diagnostic odds ratio is",dor)))
+
+}
+
+#Calculates results for cutoff between 0.1-0.9
+#' @title Range of calculations from the confusion matrix
+#' @description This function calculates various values from the confusion matrix using series of cuttoffs between 0.1-0.9
+#' @param mat_tab A confusion matrix \code{table}
+#' @param cal A \code{character} representing the value to be computed
+#' @return A \code{character} of the computer value
+#' @author Manisha Parajuli, Favour Onyido, Festus Attah
+#' @export
+cal2 <- function(x,y,cal){
+  cutoff <- seq(0.1, 0.9, 0.1)
+  s <- length(cutoff)
+  nums <- rep(NA,s)
+  for (i in 1:s){
+    mat_tab <- conf_mat(x,y,cutoff=cutoff[i])
+    calculation <- cal_confusion_matrix(mat_tab,cal)
+    nums[i] <- as.numeric(tail(strsplit(calculation,split=" ")[[1]],1))
+  }
+
+  plot(nums,cutoff,ylab="Cutoffs between 0.1-0.9", xlab="Calculated figures")
+}
