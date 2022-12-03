@@ -1,0 +1,105 @@
+---
+title: "Final Projec: Creating a Logistic Regression Package"
+author: "Gropu 7:Favour Onyido, Manisha Parajuli, Festus Attah"
+date: "2022-12-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(irg)
+library(logregG7)
+```
+
+In this file, we are describing the package logregG7. We created the package using a sample dataset from canvas. The package can be downloaded from the github repo  link using [logreG7](https://github.com/AU-R-Data-Science/Finalproject_G7)
+and the link in parenthesis: (devtools::install_githubAU-R-Data-Science/Finalproject_G7) in your console. 
+
+NB:Be sure to have "devtools" already installed in R.
+
+
+
+## Data Pre-Processing
+
+In this section we will use the covid.csv data from canvas to test our package. We first read the csv file into our environment and omit all rows with `NA` value. We then select two columns we would use as our dependent and independent variable, y and x respectively.
+
+```{r}
+df <-  na.omit(read.csv("covid.csv", header=TRUE))
+
+y <- as.numeric(factor(df$Symptoms, labels = c(0, 1)))
+x <- matrix(as.numeric(as.factor(df$Hospitalization.type)))
+```
+
+Once our data has been pre-processed and read into our environment, we can begin using the functions from our package.
+
+First we can optimize our cost function and train it using the `optim_log()` function from our package. It returns an intercept and coefficient.
+
+```{r}
+Optim_log(x,y)
+```
+
+## Boostrapping Procedure
+
+We can then compute a confidence interval of our beta using the bootstrap method. This can be achieved using the `bootstrap_confi()` function available in our package.Follow this link for more information on [Bootstrapping](https://en.wikipedia.org/wiki/Bootstrap_(front-end_framework))**
+
+By default, it uses $20$ and $0.05$ as the default number of bootstrap replications and alpha value respectively. The parameter can be adjusted to the user specification by changing the `b` and `alpha` values.
+
+Thus user has total control over the parameter and number of bootstrap replications.
+
+```{r}
+bootstrap_confi(x,y)
+
+
+
+bootstrap_confi(x,y, b=50, alpha = 0.10)
+#Notice how the computed values changes
+```
+
+## Plotting the predicted probabilities vrs the true data points
+
+We also have the ability to generate a confusion matrix of the predicted values against the actual values using the conf_mat() function. The function uses $0.5$ as the cutoff value, however you can provide yours by including `cuttoff={value}` as a parameter. This function returns a table which can use used in the next function.
+
+```{r}
+plot_predict(x,y)
+```
+
+
+## Confusion Matrix
+
+We also have the ability to generate a confusion matrix of the predicted values against the actual values using the conf_mat() function. The fuction uses 0.5 as the cutoff value, however you can provide yours by including "cuttoff={value}" as a parameter. This function returns a table which can use used in the next function.
+
+```{r}
+conf_mat(x,y)
+```
+
+
+Several calculations can be made from the generated confusion matrix using the `cal_confusion_matrix()` function. It accepts two values, the actual confusion matrix table (the item returned by the conf_mat() table above) and a 3- letter character indicating what calculation you'd like to make (by default, it calculates the accuracy)).
+
+* "pre” for Prevalence
+
+*  "acc” for Accuracy 
+
+* “sen” for Sensitivity 
+
+* “spe” for Specificity 
+
+* “fdr” for False Discovery Rate 
+
+* “dor” for Diagnostic Odds Ratio 
+
+
+```{r}
+cal_confusion_matrix(conf_mat(x,y))
+```
+
+Finally, `cal2()` function allows you to compute a calculation of your choice just like in cal_confusion_matrix() but this time it gives you the value of the calculation for a range of cuttoffs between $0.1 - 0.9$. It also then plots this values. `cal2()` does not use a default value so you would have to let it know what calculation you would like to make.
+
+```{r}
+cal2(x,y,"acc")
+```
+
+
+*A more robust example is provided in the test.R file on the github repo using a better dataset example.*
+
