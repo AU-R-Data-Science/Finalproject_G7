@@ -1,0 +1,35 @@
+---
+output: github_document
+---
+
+# Package to implement logistic regression
+  
+This package implements logistic regression using numerical optimization.
+
+## Descriptions of the relevant functions that can be used from this package
+
+optim_log(): This accepts the independent variable(s) x and the dependent varibale (y). It then optimizes the cost function that is already defined in the package using x and y as the required data in the optimizer function.
+
+bootstrap_confi(): This computes the confidence interval for the computed beta. It accepts x and y as defined above and then also uses 20 as the default bootstrap replications (b) and 0.05 as the default alpha values (alpha). 
+
+plot_predict(): This function plots the predicted probabilities against the true data points.
+
+conf_mat(): This function generates a confusion matrix for the predicted and actual values
+
+cal_confusion_matrix(): This function makes calculations for based on the generated confusion matrix. This calculations that can be calculated are:
+
+Prevalence "pre"
+
+Accuracy "acc"
+
+Sensitivity "sen"
+
+Specificity "spe"
+
+False Discovery Rate "fdr"
+
+Diagnostic Odds Ratio "dor"
+
+Add the characters in quotes (with the quotes) as the second parameter (after mat_tab) to indicate the calculation you are interested in. The function returns a sentence (character) with the calculated figure. To get the calculated figure as a numeric value use "as.numeric(tail(strsplit(cal_confusion_matrix(mat_tab,cal),split=" ")[[1]],1))" to subset the sentence
+
+cal2(): This function provides a plot of the requested calculation over a range (0.1-0.9) of cuttoff values. Similarly, provide the characters in quotes (with the quotes) above as the third parameter (after x and y) to indicate the calculation you are interested in.

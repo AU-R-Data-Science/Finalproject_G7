@@ -1,11 +1,6 @@
 #Importing needed libraries
 library(caret)
 
-#' @importFrom graphics lines
-#' @importFrom stats optim qnorm sd
-#' @importFrom utils tail
-NULL
-
 
 #Generating the sigmoid function
 sigmoid <- function(x){
@@ -25,7 +20,7 @@ y <- as.vector(round(sigmoid(beta%*%t(cbind(1,x))+rnorm(n, 0, 1))))
 #' @title Cost function
 #' @description This function computes the cost function that is to be optimized
 #' @param beta A \code{vector}
-#' @param X A \code{matrix} that holds the independent variables
+#' @param x A \code{matrix} that holds the independent variables
 #' @param y A \code{vector} representing the dependent variable
 #' @return A \code{matrix} containing the following objects
 #' @author Manisha Parajuli, Favour Onyido, Festus Attah
@@ -40,7 +35,7 @@ cost <- function(beta, X, y){
 #' @title Gradient function
 #' @description This function computes the gradient function that is to be optimized
 #' @param beta A 2 digit \code{vector}
-#' @param X A \code{matrix} that holds the independent variables
+#' @param x A \code{matrix} that holds the independent variables
 #' @param y A \code{vector} representing the dependent variable
 #' @return A \code{matrix} containing the following objects
 #' @author Manisha Parajuli, Favour Onyido, Festus Attah
@@ -54,7 +49,7 @@ grad <- function(beta, X, y){
 }
 
 #' @title Optim log
-#' @description This function minimizes the cost function computed
+#' @description This function minimizes the cost function computed above
 #' @param x A \code{matrix} that holds the independent variables
 #' @param y A \code{vector} representing the dependent variable
 #' @return A \code{matrix} containing the intercept and coefficient
@@ -81,7 +76,7 @@ Optim_log <- function(x, y)
 #' @param x A \code{matrix} that holds the independent variables
 #' @param y A \code{vector} representing the dependent variable
 #' @param b A \code{numeric} representing the number of bootstrap replications
-#' @param alpha A \code{numeric} representing the confidence level
+#' @param alpha A \code{numeric} representing the confidence levzel
 #' @return A \code{matrix} containing the following objects:
 #' \describe{
 #'  \item{beta_mean}{This \code{numeric} represents the mean of the parameter estimates}
@@ -150,7 +145,7 @@ conf_mat <- function(x,y, cutoff = 0.5){
   y <- factor(y)
   levels(y) <- c('Negative', 'Positive')
   levels(pred) <- c('Negative', 'Positive')
-  return (caret::confusionMatrix(pred,y)$table)
+  return (confusionMatrix(pred,y)$table)
 }
 
 
@@ -207,8 +202,7 @@ cal_confusion_matrix <- function(mat_tab, cal="acc"){
 #Calculates results for cutoff between 0.1-0.9
 #' @title Range of calculations from the confusion matrix
 #' @description This function calculates various values from the confusion matrix using series of cuttoffs between 0.1-0.9
-#' @param x A \code{matrix} that holds the independent variables
-#' @param y A \code{vector} representing the dependent variable
+#' @param mat_tab A confusion matrix \code{table}
 #' @param cal A \code{character} representing the value to be computed. "pre" calculates prevelance, "acc" calculates accuracy, "sen" calculates sensitivity, "spe" calculates "specificity, "fdr" calculates false discovery ratio, "dor" calculates diagnostic odds ratio
 #' @return A \code{character} of the computer value
 #' @author Manisha Parajuli, Favour Onyido, Festus Attah

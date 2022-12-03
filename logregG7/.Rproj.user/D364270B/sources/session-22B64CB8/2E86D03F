@@ -1,0 +1,27 @@
+{
+    "id": "2E86D03F",
+    "path": "~/GitHub/Finalproject_G7/logregG7/R/logreg.R",
+    "project_path": "R/logreg.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1670023201265.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "217,21",
+        "scrollLine": "199",
+        "softWrapLines": "true"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1670029096,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1670029096247,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,16 @@
+Package: logregG7
+Type: Package
+Title: Logistic regression
+Version: 0.1.0
+Author: c(
+  person("Manisha", "Parajuli", email = 'mzp0131@auburn.edu', role = c("aut", "cre")),
+    person("Favour", "Onyido", email = 'fko0002@auburn.edu', role = c("aut", "cre")),
+  person("Festus", "Attah", email = 'fsa0005@auburn.edu', role = c("aut", "cre")),
+)
+Maintainer: Manisha Parajuli <mzp0131@auburn.edu>
+Maintainer: Festus Attah <fsa0005@auburn.edu>
+Maintainer: Favour Onyido <fko0002@auburn.edu>
+Description: This package contains basic functions to perform logistic regression.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
